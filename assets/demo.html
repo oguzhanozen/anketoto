@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Anket Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+    }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 24px;
+      background: #f6f7fb;
+      color: #1b1f24;
+    }
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #e2e5ea;
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 8px 24px rgba(27, 31, 36, 0.08);
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px;
+    }
+    .q {
+      margin: 18px 0;
+      padding: 12px;
+      border: 1px dashed #d7dbe2;
+      border-radius: 10px;
+      background: #fbfcff;
+    }
+    .q-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #e0e4eb;
+      background: #fff;
+      cursor: pointer;
+    }
+    button {
+      margin-top: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid #2a5ee8;
+      background: #2a5ee8;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #214cc2;
+    }
+    .note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #4d5766;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Anket Demo</h1>
+    <form>
+      <div class="q">
+        <div class="q-title">1) Hizmet kalitesini nasil degerlendirirsiniz?</div>
+        <div class="row">
+          <label><input type="radio" name="q1" value="1"> 1</label>
+          <label><input type="radio" name="q1" value="2"> 2</label>
+          <label><input type="radio" name="q1" value="3"> 3</label>
+          <label><input type="radio" name="q1" value="4"> 4</label>
+          <label><input type="radio" name="q1" value="5"> 5</label>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="q-title">2) Uygulama arayuzu kolay anlasilir mi?</div>
+        <div class="row">
+          <label><input type="radio" name="q2" value="1"> 1</label>
+          <label><input type="radio" name="q2" value="2"> 2</label>
+          <label><input type="radio" name="q2" value="3"> 3</label>
+          <label><input type="radio" name="q2" value="4"> 4</label>
+          <label><input type="radio" name="q2" value="5"> 5</label>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="q-title">3) Tavsiye eder misiniz?</div>
+        <div class="row">
+          <label><input type="radio" name="q3" value="1"> 1</label>
+          <label><input type="radio" name="q3" value="2"> 2</label>
+          <label><input type="radio" name="q3" value="3"> 3</label>
+          <label><input type="radio" name="q3" value="4"> 4</label>
+          <label><input type="radio" name="q3" value="5"> 5</label>
+        </div>
+      </div>
+
+      <button type="submit">Kaydet</button>
+      <div class="note" id="save-status">Bu sayfa ekran goruntusu almak icin demo amaclidir.</div>
+    </form>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const status = document.getElementById("save-status");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        status.textContent = "Kaydedildi";
+      });
+    });
+  </script>
+</body>
+</html>
