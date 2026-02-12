@@ -4,6 +4,7 @@
     const setStatus = (txt) => (statusEl.textContent = txt);
 
     document.getElementById('run').addEventListener('click', async () => {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
       setStatus('Çalıştırılıyor...');
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -14,7 +15,7 @@
 
         const results = await chrome.scripting.executeScript({
           target: { tabId: tab.id, allFrames: true },
-          func: () => {
+          func: (selectedMode) => {
             const normalizeText = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
             const toLower = (s) => s?.toLocaleLowerCase('tr') || '';
 
@@ -30,22 +31,40 @@
             }
 
             for (const list of groups.values()) {
-              // Öncelik: value="5" → en yüksek sayısal değer → son seçenek
-              let candidate = list.find((r) => String(r.value).trim() === '5');
-              if (!candidate) {
-                const numeric = list
-                  .map((r) => ({ r, v: parseFloat(String(r.value).replace(',', '.')) }))
-                  .filter((o) => !Number.isNaN(o.v));
-                if (numeric.length) {
-                  candidate = numeric.reduce((a, b) => (a.v >= b.v ? a : b)).r;
+              let candidate = null;
+
+              if (selectedMode === 'max') {
+                // Öncelik: value="5" → en yüksek sayısal değer → son seçenek
+                candidate = list.find((r) => String(r.value).trim() === '5');
+                if (!candidate) {
+                  const numeric = list
+                    .map((r) => ({ r, v: parseFloat(String(r.value).replace(',', '.')) }))
+                    .filter((o) => !Number.isNaN(o.v));
+                  if (numeric.length) {
+                    candidate = numeric.reduce((a, b) => (a.v >= b.v ? a : b)).r;
+                  }
                 }
+                if (!candidate) candidate = list[list.length - 1];
+              } else if (selectedMode === 'min') {
+                // Öncelik: value="1" → en düşük sayısal değer → ilk seçenek
+                candidate = list.find((r) => String(r.value).trim() === '1');
+                if (!candidate) {
+                  const numeric = list
+                    .map((r) => ({ r, v: parseFloat(String(r.value).replace(',', '.')) }))
+                    .filter((o) => !Number.isNaN(o.v));
+                  if (numeric.length) {
+                    candidate = numeric.reduce((a, b) => (a.v <= b.v ? a : b)).r;
+                  }
+                }
+                if (!candidate) candidate = list[0];
+              } else {
+                // random
+                candidate = list[Math.floor(Math.random() * list.length)];
               }
-              if (!candidate) candidate = list[list.length - 1];
 
               if (candidate) {
                 const label = candidate.id ? document.querySelector(`label[for="${candidate.id}"]`) : candidate.closest('label');
                 (label || candidate).click();
-                // Olası framework’ler için input/change olaylarını tetikle
                 try {
                   candidate.dispatchEvent(new Event('input', { bubbles: true }));
                   candidate.dispatchEvent(new Event('change', { bubbles: true }));
@@ -54,7 +73,7 @@
               }
             }
 
-            console.log(`${radioMarkedCount} soru isaretlendi`);
+            console.log(`${radioMarkedCount} soru isaretlendi (mod: ${selectedMode})`);
 
             // Kaydet/Gönder butonu bulma
             const keywords = ['kaydet', 'gönder', 'submit', 'bitir', 'tamam', 'kaydet ve devam', 'kayıt', 'save', 'finish'];
@@ -85,6 +104,7 @@
             console.log('Kaydet butonu bulunamadı');
             return { radioMarkedCount, clicked: false };
           },
+          args: [mode],
         });
 
         // Çerçevelerden gelen sonuçları özetle
