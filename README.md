@@ -3,7 +3,10 @@
 Chrome uzantisi, aktif sayfadaki anketleri tek tikla doldurur ve kaydetmeye calisir.
 
 ## Ozellikler
-- Radio sorularini otomatik isaretler (5 degeri oncelikli).
+- **3 farkli doldurma modu:**
+  - **En yuksek deger (5 ★)** — Tum sorularda en yuksek puani secer.
+  - **En dusuk deger (1 ★)** — Tum sorularda en dusuk puani secer.
+  - **Rastgele** — Her soruyu rastgele isaretler.
 - Uygun bir Kaydet/Gonder butonu bulup tiklar.
 - Popup icinden tek tikla calisir.
 
@@ -12,9 +15,11 @@ Chrome uzantisi, aktif sayfadaki anketleri tek tikla doldurur ve kaydetmeye cali
 2) Developer mode acin
 3) Load unpacked ile bu klasoru secin
 
-## Kullanım
-- Ankete ait sayfayi acin.
-- Eklentiye tiklayin ve "Anketi doldur ve kaydet" butonuna basin.
+## Kullanim
+1. Ankete ait sayfayi acin.
+2. Eklenti ikonuna tiklayin.
+3. Doldurma modunu secin (En yuksek / En dusuk / Rastgele).
+4. "Anketi doldur ve kaydet" butonuna basin.
 
 ## Demo
 - [assets/demo.html](assets/demo.html) dosyasini Chrome'da acabilirsiniz.
