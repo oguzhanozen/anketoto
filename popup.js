@@ -12,13 +12,75 @@
       return tab;
     }
 
+    // ── TEMIZLE fonksiyonu (hem buton hem doldur oncesi icin) ──
+    async function clearSelections() {
+      const tab = await getActiveTab();
+      if (!tab) return;
+
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        func: () => {
+          // Standart radio
+          document.querySelectorAll('input[type="radio"]:checked').forEach((r) => {
+            r.checked = false;
+            try {
+              r.dispatchEvent(new Event('input', { bubbles: true }));
+              r.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch {}
+          });
+
+          // Standart checkbox
+          document.querySelectorAll('input[type="checkbox"]:checked').forEach((c) => {
+            c.checked = false;
+            try {
+              c.dispatchEvent(new Event('input', { bubbles: true }));
+              c.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch {}
+          });
+
+          // ARIA role="radio" — attribute sifirla, click tetikleme
+          document.querySelectorAll('[role="radio"][aria-checked="true"]').forEach((el) => {
+            el.setAttribute('aria-checked', 'false');
+            el.classList.remove('selected', 'checked', 'active');
+            try {
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch {}
+          });
+
+          // ARIA role="option" — attribute sifirla
+          document.querySelectorAll('[role="option"][aria-selected="true"], [role="option"][aria-checked="true"]').forEach((el) => {
+            el.setAttribute('aria-selected', 'false');
+            el.setAttribute('aria-checked', 'false');
+            el.classList.remove('selected', 'checked', 'active');
+            try {
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch {}
+          });
+
+          // ARIA role="checkbox" — attribute sifirla
+          document.querySelectorAll('[role="checkbox"][aria-checked="true"]').forEach((el) => {
+            el.setAttribute('aria-checked', 'false');
+            el.classList.remove('selected', 'checked', 'active');
+            try {
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch {}
+          });
+        },
+      });
+    }
+
     // ── DOLDUR butonu ──
     document.getElementById('fill').addEventListener('click', async () => {
       const mode = document.querySelector('input[name="mode"]:checked').value;
-      setStatus('Dolduruluyor...');
+      setStatus('Temizleniyor...');
       try {
         const tab = await getActiveTab();
         if (!tab) return;
+
+        // Once temizle
+        await clearSelections();
+
+        setStatus('Dolduruluyor...');
 
         const results = await chrome.scripting.executeScript({
           target: { tabId: tab.id, allFrames: true },
@@ -237,55 +299,8 @@
     document.getElementById('clear').addEventListener('click', async () => {
       setStatus('Temizleniyor...');
       try {
-        const tab = await getActiveTab();
-        if (!tab) return;
-
-        const results = await chrome.scripting.executeScript({
-          target: { tabId: tab.id, allFrames: true },
-          func: () => {
-            let cleared = 0;
-
-            // 1) Standart radio
-            document.querySelectorAll('input[type="radio"]:checked').forEach((r) => {
-              r.checked = false;
-              try {
-                r.dispatchEvent(new Event('input', { bubbles: true }));
-                r.dispatchEvent(new Event('change', { bubbles: true }));
-              } catch {}
-              cleared++;
-            });
-
-            // 2) Standart checkbox
-            document.querySelectorAll('input[type="checkbox"]:checked').forEach((c) => {
-              c.checked = false;
-              try {
-                c.dispatchEvent(new Event('input', { bubbles: true }));
-                c.dispatchEvent(new Event('change', { bubbles: true }));
-              } catch {}
-              cleared++;
-            });
-
-            // 3) ARIA role="radio" ve role="option"
-            document.querySelectorAll('[role="radio"][aria-checked="true"], [role="option"][aria-selected="true"], [role="option"][aria-checked="true"]').forEach((el) => {
-              el.click();
-              el.setAttribute('aria-checked', 'false');
-              el.setAttribute('aria-selected', 'false');
-              cleared++;
-            });
-
-            // 4) ARIA role="checkbox"
-            document.querySelectorAll('[role="checkbox"][aria-checked="true"]').forEach((el) => {
-              el.click();
-              el.setAttribute('aria-checked', 'false');
-              cleared++;
-            });
-
-            return cleared;
-          },
-        });
-
-        const total = results.map((r) => r?.result || 0).reduce((a, b) => a + b, 0);
-        setStatus(`Temizlenen: ${total}`);
+        await clearSelections();
+        setStatus('Temizlendi');
       } catch (err) {
         console.error(err);
         setStatus('Hata: ' + err.message);
