@@ -20,9 +20,10 @@
             const toLower = (s) => s?.toLocaleLowerCase('tr') || '';
 
             let radioMarkedCount = 0;
+
+            // ── 1) Standart <input type="radio"> ──
             const radiosAll = Array.from(document.querySelectorAll('input[type="radio"]'));
 
-            // Gruplara ayır (name ile), yoksa her radio'yu tek grup say
             const groups = new Map();
             for (const r of radiosAll) {
               const key = r.name ? `name:${r.name}` : r.closest('label') ? `label:${normalizeText(r.closest('label'))}` : `id:${r.id || Math.random()}`;
@@ -34,7 +35,6 @@
               let candidate = null;
 
               if (selectedMode === 'max') {
-                // Öncelik: value="5" → en yüksek sayısal değer → son seçenek
                 candidate = list.find((r) => String(r.value).trim() === '5');
                 if (!candidate) {
                   const numeric = list
@@ -46,7 +46,6 @@
                 }
                 if (!candidate) candidate = list[list.length - 1];
               } else if (selectedMode === 'min') {
-                // Öncelik: value="1" → en düşük sayısal değer → ilk seçenek
                 candidate = list.find((r) => String(r.value).trim() === '1');
                 if (!candidate) {
                   const numeric = list
@@ -58,7 +57,6 @@
                 }
                 if (!candidate) candidate = list[0];
               } else {
-                // random
                 candidate = list[Math.floor(Math.random() * list.length)];
               }
 
@@ -73,13 +71,76 @@
               }
             }
 
+            // ── 2) Google Forms: div[role="radio"] ──
+            const gfGroups = new Map();
+            const gfRadios = Array.from(document.querySelectorAll('div[role="radio"], div[role="option"]'));
+
+            for (const r of gfRadios) {
+              const group = r.closest('div[role="radiogroup"], div[role="listbox"], div[role="list"]');
+              const key = group ? `gf:${group.getAttribute('aria-labelledby') || group.getAttribute('data-params') || Array.from(document.querySelectorAll('div[role="radiogroup"], div[role="listbox"], div[role="list"]')).indexOf(group)}` : `gf:solo:${Math.random()}`;
+              if (!gfGroups.has(key)) gfGroups.set(key, []);
+              gfGroups.get(key).push(r);
+            }
+
+            for (const list of gfGroups.values()) {
+              let candidate = null;
+
+              // data-value veya aria-label icerisinden sayi cikarma
+              const getVal = (el) => {
+                const dv = el.getAttribute('data-value') || '';
+                const al = el.getAttribute('aria-label') || '';
+                const txt = normalizeText(el);
+                const raw = dv || al || txt;
+                const num = parseFloat(raw.replace(',', '.'));
+                return Number.isNaN(num) ? null : num;
+              };
+
+              const withNums = list.map((r) => ({ r, v: getVal(r) }));
+              const numeric = withNums.filter((o) => o.v !== null);
+
+              if (selectedMode === 'max') {
+                if (numeric.length) {
+                  candidate = numeric.reduce((a, b) => (a.v >= b.v ? a : b)).r;
+                } else {
+                  candidate = list[list.length - 1];
+                }
+              } else if (selectedMode === 'min') {
+                if (numeric.length) {
+                  candidate = numeric.reduce((a, b) => (a.v <= b.v ? a : b)).r;
+                } else {
+                  candidate = list[0];
+                }
+              } else {
+                candidate = list[Math.floor(Math.random() * list.length)];
+              }
+
+              if (candidate && candidate.getAttribute('aria-checked') !== 'true') {
+                candidate.click();
+                try {
+                  candidate.dispatchEvent(new Event('input', { bubbles: true }));
+                  candidate.dispatchEvent(new Event('change', { bubbles: true }));
+                } catch {}
+                radioMarkedCount++;
+              }
+            }
+
+            // ── 3) Google Forms: Checkbox gruplari (div[role="checkbox"]) ──
+            const gfCheckboxes = Array.from(document.querySelectorAll('div[role="checkbox"]'));
+            for (const cb of gfCheckboxes) {
+              if (cb.getAttribute('aria-checked') !== 'true') {
+                if (selectedMode === 'random' && Math.random() < 0.5) continue;
+                cb.click();
+                radioMarkedCount++;
+              }
+            }
+
             console.log(`${radioMarkedCount} soru isaretlendi (mod: ${selectedMode})`);
 
             // Kaydet/Gönder butonu bulma
-            const keywords = ['kaydet', 'gönder', 'submit', 'bitir', 'tamam', 'kaydet ve devam', 'kayıt', 'save', 'finish'];
+            const keywords = ['kaydet', 'gönder', 'submit', 'bitir', 'tamam', 'kaydet ve devam', 'kayıt', 'save', 'finish', 'gonder', 'send'];
             const candidates = Array.from(
               document.querySelectorAll(
-                'button, input[type="button"], input[type="submit"], [role="button"], a.button, a[onclick]'
+                'button, input[type="button"], input[type="submit"], [role="button"], a.button, a[onclick], div[role="button"]'
               )
             );
 
