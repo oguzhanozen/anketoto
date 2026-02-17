@@ -3,21 +3,27 @@
     const statusEl = document.getElementById('status');
     const setStatus = (txt) => (statusEl.textContent = txt);
 
-    document.getElementById('run').addEventListener('click', async () => {
+    async function getActiveTab() {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab || !tab.id) {
+        setStatus('Aktif sekme bulunamadı.');
+        return null;
+      }
+      return tab;
+    }
+
+    // ── DOLDUR butonu ──
+    document.getElementById('fill').addEventListener('click', async () => {
       const mode = document.querySelector('input[name="mode"]:checked').value;
-      setStatus('Çalıştırılıyor...');
+      setStatus('Dolduruluyor...');
       try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab || !tab.id) {
-          setStatus('Aktif sekme bulunamadı.');
-          return;
-        }
+        const tab = await getActiveTab();
+        if (!tab) return;
 
         const results = await chrome.scripting.executeScript({
           target: { tabId: tab.id, allFrames: true },
           func: (selectedMode) => {
             const normalizeText = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
-            const toLower = (s) => s?.toLocaleLowerCase('tr') || '';
 
             let radioMarkedCount = 0;
 
@@ -85,7 +91,6 @@
             for (const list of gfGroups.values()) {
               let candidate = null;
 
-              // data-value veya aria-label icerisinden sayi cikarma
               const getVal = (el) => {
                 const dv = el.getAttribute('data-value') || '';
                 const al = el.getAttribute('aria-label') || '';
@@ -124,7 +129,7 @@
               }
             }
 
-            // ── 3) Google Forms: Checkbox gruplari (div[role="checkbox"]) ──
+            // ── 3) Google Forms: Checkbox gruplari ──
             const gfCheckboxes = Array.from(document.querySelectorAll('div[role="checkbox"]'));
             for (const cb of gfCheckboxes) {
               if (cb.getAttribute('aria-checked') !== 'true') {
@@ -134,9 +139,32 @@
               }
             }
 
-            console.log(`${radioMarkedCount} soru isaretlendi (mod: ${selectedMode})`);
+            return radioMarkedCount;
+          },
+          args: [mode],
+        });
 
-            // Kaydet/Gönder butonu bulma
+        const total = results.map((r) => r?.result || 0).reduce((a, b) => a + b, 0);
+        setStatus(`İşaretlenen: ${total}`);
+      } catch (err) {
+        console.error(err);
+        setStatus('Hata: ' + err.message);
+      }
+    });
+
+    // ── KAYDET butonu ──
+    document.getElementById('save').addEventListener('click', async () => {
+      setStatus('Kaydediliyor...');
+      try {
+        const tab = await getActiveTab();
+        if (!tab) return;
+
+        const results = await chrome.scripting.executeScript({
+          target: { tabId: tab.id, allFrames: true },
+          func: () => {
+            const normalizeText = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+            const toLower = (s) => s?.toLocaleLowerCase('tr') || '';
+
             const keywords = ['kaydet', 'gönder', 'submit', 'bitir', 'tamam', 'kaydet ve devam', 'kayıt', 'save', 'finish', 'gonder', 'send'];
             const candidates = Array.from(
               document.querySelectorAll(
@@ -158,32 +186,15 @@
 
             const saveBtn = findSave();
             if (saveBtn) {
-              setTimeout(() => saveBtn.click(), 500);
-              console.log('kaydedildi');
-              return { radioMarkedCount, clicked: true };
+              saveBtn.click();
+              return true;
             }
-            console.log('Kaydet butonu bulunamadı');
-            return { radioMarkedCount, clicked: false };
+            return false;
           },
-          args: [mode],
         });
 
-        // Çerçevelerden gelen sonuçları özetle
-        const summary = results
-          .map((r) => r?.result)
-          .filter(Boolean)
-          .reduce(
-            (acc, cur) => {
-              acc.totalMarked += cur.radioMarkedCount || 0;
-              acc.anyClicked = acc.anyClicked || !!cur.clicked;
-              return acc;
-            },
-            { totalMarked: 0, anyClicked: false }
-          );
-
-        setStatus(
-          `İşaretlenen: ${summary.totalMarked} | Kaydet: ${summary.anyClicked ? 'tıklandı' : 'bulunamadı'}`
-        );
+        const clicked = results.some((r) => r?.result === true);
+        setStatus(clicked ? 'Kaydet tıklandı' : 'Kaydet butonu bulunamadı');
       } catch (err) {
         console.error(err);
         setStatus('Hata: ' + err.message);
