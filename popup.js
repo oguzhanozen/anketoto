@@ -135,11 +135,39 @@
             // ── 3) ARIA role="checkbox" (tum element turleri) ──
             const ariaCheckboxes = Array.from(document.querySelectorAll('[role="checkbox"]'))
               .filter((el) => el.tagName !== 'INPUT');
+
+            // Checkboxlari gruplarina gore topla (parent container bazinda)
+            const cbGroups = new Map();
             for (const cb of ariaCheckboxes) {
-              if (cb.getAttribute('aria-checked') !== 'true') {
-                if (selectedMode === 'random' && Math.random() < 0.5) continue;
-                cb.click();
-                radioMarkedCount++;
+              const parent = cb.parentElement;
+              const key = parent ? `cbg:${Array.from(document.querySelectorAll('*')).indexOf(parent)}` : `cbg:solo:${Math.random()}`;
+              if (!cbGroups.has(key)) cbGroups.set(key, []);
+              cbGroups.get(key).push(cb);
+            }
+
+            for (const list of cbGroups.values()) {
+              if (selectedMode === 'max') {
+                // Sadece son secenegi isaretle
+                const target = list[list.length - 1];
+                if (target && target.getAttribute('aria-checked') !== 'true') {
+                  target.click();
+                  radioMarkedCount++;
+                }
+              } else if (selectedMode === 'min') {
+                // Sadece ilk secenegi isaretle
+                const target = list[0];
+                if (target && target.getAttribute('aria-checked') !== 'true') {
+                  target.click();
+                  radioMarkedCount++;
+                }
+              } else {
+                // random: her birini %50 olasilikla isaretle
+                for (const cb of list) {
+                  if (cb.getAttribute('aria-checked') !== 'true' && Math.random() >= 0.5) {
+                    cb.click();
+                    radioMarkedCount++;
+                  }
+                }
               }
             }
 
