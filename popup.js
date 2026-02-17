@@ -77,18 +77,21 @@
               }
             }
 
-            // ── 2) Google Forms: div[role="radio"] ──
-            const gfGroups = new Map();
-            const gfRadios = Array.from(document.querySelectorAll('div[role="radio"], div[role="option"]'));
+            // ── 2) ARIA role="radio" / role="option" (tum element turleri) ──
+            const ariaGroups = new Map();
+            const ariaRadios = Array.from(document.querySelectorAll('[role="radio"], [role="option"]'))
+              .filter((el) => el.tagName !== 'INPUT'); // standart radiolarla cakismasin
 
-            for (const r of gfRadios) {
-              const group = r.closest('div[role="radiogroup"], div[role="listbox"], div[role="list"]');
-              const key = group ? `gf:${group.getAttribute('aria-labelledby') || group.getAttribute('data-params') || Array.from(document.querySelectorAll('div[role="radiogroup"], div[role="listbox"], div[role="list"]')).indexOf(group)}` : `gf:solo:${Math.random()}`;
-              if (!gfGroups.has(key)) gfGroups.set(key, []);
-              gfGroups.get(key).push(r);
+            for (const r of ariaRadios) {
+              const group = r.closest('[role="radiogroup"], [role="listbox"], [role="list"]');
+              const key = group
+                ? `aria:${group.getAttribute('aria-labelledby') || group.getAttribute('aria-label') || group.getAttribute('data-params') || Array.from(document.querySelectorAll('[role="radiogroup"], [role="listbox"], [role="list"]')).indexOf(group)}`
+                : `aria:solo:${Math.random()}`;
+              if (!ariaGroups.has(key)) ariaGroups.set(key, []);
+              ariaGroups.get(key).push(r);
             }
 
-            for (const list of gfGroups.values()) {
+            for (const list of ariaGroups.values()) {
               let candidate = null;
 
               const getVal = (el) => {
@@ -129,9 +132,10 @@
               }
             }
 
-            // ── 3) Google Forms: Checkbox gruplari ──
-            const gfCheckboxes = Array.from(document.querySelectorAll('div[role="checkbox"]'));
-            for (const cb of gfCheckboxes) {
+            // ── 3) ARIA role="checkbox" (tum element turleri) ──
+            const ariaCheckboxes = Array.from(document.querySelectorAll('[role="checkbox"]'))
+              .filter((el) => el.tagName !== 'INPUT');
+            for (const cb of ariaCheckboxes) {
               if (cb.getAttribute('aria-checked') !== 'true') {
                 if (selectedMode === 'random' && Math.random() < 0.5) continue;
                 cb.click();

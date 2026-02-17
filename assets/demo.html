@@ -2,11 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>Anket Demo</title>
+  <title>AnketOto - Demo (Tum Radio Turleri)</title>
   <style>
-    :root {
-      color-scheme: light;
-    }
+    :root { color-scheme: light; }
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       margin: 24px;
@@ -14,115 +12,243 @@
       color: #1b1f24;
     }
     .card {
-      max-width: 720px;
-      margin: 0 auto;
+      max-width: 760px;
+      margin: 0 auto 24px;
       background: #fff;
       border: 1px solid #e2e5ea;
       border-radius: 12px;
       padding: 20px 22px;
       box-shadow: 0 8px 24px rgba(27, 31, 36, 0.08);
     }
-    h1 {
-      font-size: 20px;
-      margin: 0 0 12px;
-    }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 18px 0 6px; color: #2a5ee8; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #e8f0fe; color: #1a56db; margin-left: 6px; }
     .q {
-      margin: 18px 0;
+      margin: 14px 0;
       padding: 12px;
       border: 1px dashed #d7dbe2;
       border-radius: 10px;
       background: #fbfcff;
     }
-    .q-title {
-      font-weight: 600;
-      margin-bottom: 8px;
+    .q-title { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Standart radio label */
+    label.opt {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 8px; border-radius: 8px;
+      border: 1px solid #e0e4eb; background: #fff; cursor: pointer;
     }
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+
+    /* ARIA radio (div) */
+    .aria-radio {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid #d0d5dd; background: #fff; cursor: pointer;
+      user-select: none; font-size: 14px;
     }
-    label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #e0e4eb;
-      background: #fff;
-      cursor: pointer;
+    .aria-radio[aria-checked="true"] { background: #e8f0fe; border-color: #2a5ee8; color: #1a56db; font-weight: 600; }
+    .aria-radio::before {
+      content: "○"; font-size: 16px; color: #888;
     }
-    button {
-      margin-top: 8px;
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid #2a5ee8;
-      background: #2a5ee8;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
+    .aria-radio[aria-checked="true"]::before { content: "●"; color: #2a5ee8; }
+
+    /* ARIA radio (span) */
+    span.aria-radio-span {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid #c5cad3; background: #fafbfc; cursor: pointer;
+      user-select: none; font-size: 14px;
     }
-    button:hover {
-      background: #214cc2;
+    span.aria-radio-span[aria-checked="true"] { background: #def7ec; border-color: #31c48d; color: #046c4e; font-weight: 600; }
+
+    /* ARIA radio (li) */
+    li.aria-radio-li {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+      user-select: none; font-size: 14px; list-style: none;
     }
-    .note {
-      margin-top: 12px;
-      font-size: 12px;
-      color: #4d5766;
+    li.aria-radio-li[aria-checked="true"] { background: #fef3c7; border-color: #f59e0b; color: #92400e; font-weight: 600; }
+
+    /* ARIA checkbox */
+    .aria-checkbox {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid #d0d5dd; background: #fff; cursor: pointer;
+      user-select: none; font-size: 14px;
     }
+    .aria-checkbox[aria-checked="true"] { background: #fce7f3; border-color: #ec4899; color: #9d174d; font-weight: 600; }
+    .aria-checkbox::before { content: "☐"; font-size: 16px; }
+    .aria-checkbox[aria-checked="true"]::before { content: "☑"; color: #ec4899; }
+
+    button.submit-btn {
+      margin-top: 12px; padding: 10px 16px; border-radius: 10px;
+      border: 1px solid #2a5ee8; background: #2a5ee8; color: #fff;
+      font-weight: 600; cursor: pointer; font-size: 14px;
+    }
+    button.submit-btn:hover { background: #214cc2; }
+
+    .note { margin-top: 12px; font-size: 12px; color: #4d5766; }
+    #save-status { font-weight: 600; color: #046c4e; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Anket Demo</h1>
-    <form>
-      <div class="q">
-        <div class="q-title">1) Hizmet kalitesini nasil degerlendirirsiniz?</div>
-        <div class="row">
-          <label><input type="radio" name="q1" value="1"> 1</label>
-          <label><input type="radio" name="q1" value="2"> 2</label>
-          <label><input type="radio" name="q1" value="3"> 3</label>
-          <label><input type="radio" name="q1" value="4"> 4</label>
-          <label><input type="radio" name="q1" value="5"> 5</label>
-        </div>
-      </div>
 
-      <div class="q">
-        <div class="q-title">2) Uygulama arayuzu kolay anlasilir mi?</div>
-        <div class="row">
-          <label><input type="radio" name="q2" value="1"> 1</label>
-          <label><input type="radio" name="q2" value="2"> 2</label>
-          <label><input type="radio" name="q2" value="3"> 3</label>
-          <label><input type="radio" name="q2" value="4"> 4</label>
-          <label><input type="radio" name="q2" value="5"> 5</label>
-        </div>
-      </div>
+<div class="card">
+  <h1>AnketOto Demo</h1>
+  <p style="font-size:13px;color:#666;margin:0 0 8px;">Tum radio/checkbox turlerini test edin.</p>
 
-      <div class="q">
-        <div class="q-title">3) Tavsiye eder misiniz?</div>
-        <div class="row">
-          <label><input type="radio" name="q3" value="1"> 1</label>
-          <label><input type="radio" name="q3" value="2"> 2</label>
-          <label><input type="radio" name="q3" value="3"> 3</label>
-          <label><input type="radio" name="q3" value="4"> 4</label>
-          <label><input type="radio" name="q3" value="5"> 5</label>
-        </div>
-      </div>
+  <!-- ═══════════════════════════════════════ -->
+  <h2>1. Standart HTML Radio <span class="badge">&lt;input type="radio"&gt;</span></h2>
 
-      <button type="submit">Kaydet</button>
-      <div class="note" id="save-status">Bu sayfa ekran goruntusu almak icin demo amaclidir.</div>
-    </form>
+  <div class="q">
+    <div class="q-title">Hizmet kalitesini nasil degerlendirirsiniz?</div>
+    <div class="row">
+      <label class="opt"><input type="radio" name="q1" value="1"> 1</label>
+      <label class="opt"><input type="radio" name="q1" value="2"> 2</label>
+      <label class="opt"><input type="radio" name="q1" value="3"> 3</label>
+      <label class="opt"><input type="radio" name="q1" value="4"> 4</label>
+      <label class="opt"><input type="radio" name="q1" value="5"> 5</label>
+    </div>
   </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.querySelector("form");
-      const status = document.getElementById("save-status");
 
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        status.textContent = "Kaydedildi";
-      });
+  <div class="q">
+    <div class="q-title">Uygulama hizi yeterli mi?</div>
+    <div class="row">
+      <label class="opt"><input type="radio" name="q2" value="1"> 1</label>
+      <label class="opt"><input type="radio" name="q2" value="2"> 2</label>
+      <label class="opt"><input type="radio" name="q2" value="3"> 3</label>
+      <label class="opt"><input type="radio" name="q2" value="4"> 4</label>
+      <label class="opt"><input type="radio" name="q2" value="5"> 5</label>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>2. ARIA div[role="radio"] <span class="badge">Google Forms tarzı</span></h2>
+
+  <div class="q">
+    <div class="q-title" id="lbl-q3">Destek ekibinden memnun musunuz?</div>
+    <div role="radiogroup" aria-labelledby="lbl-q3" class="row">
+      <div class="aria-radio" role="radio" aria-checked="false" data-value="1" tabindex="0">1</div>
+      <div class="aria-radio" role="radio" aria-checked="false" data-value="2" tabindex="0">2</div>
+      <div class="aria-radio" role="radio" aria-checked="false" data-value="3" tabindex="0">3</div>
+      <div class="aria-radio" role="radio" aria-checked="false" data-value="4" tabindex="0">4</div>
+      <div class="aria-radio" role="radio" aria-checked="false" data-value="5" tabindex="0">5</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>3. ARIA span[role="radio"] <span class="badge">Material / Custom UI</span></h2>
+
+  <div class="q">
+    <div class="q-title" id="lbl-q4">Arayuz tasarimini begendiniz mi?</div>
+    <div role="radiogroup" aria-labelledby="lbl-q4" class="row">
+      <span class="aria-radio-span" role="radio" aria-checked="false" data-value="1" tabindex="0">1</span>
+      <span class="aria-radio-span" role="radio" aria-checked="false" data-value="2" tabindex="0">2</span>
+      <span class="aria-radio-span" role="radio" aria-checked="false" data-value="3" tabindex="0">3</span>
+      <span class="aria-radio-span" role="radio" aria-checked="false" data-value="4" tabindex="0">4</span>
+      <span class="aria-radio-span" role="radio" aria-checked="false" data-value="5" tabindex="0">5</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>4. ARIA li[role="radio"] <span class="badge">Liste tabanlı</span></h2>
+
+  <div class="q">
+    <div class="q-title" id="lbl-q5">Fiyat/performans orani nasil?</div>
+    <ul role="radiogroup" aria-labelledby="lbl-q5" class="row" style="padding:0;margin:0;">
+      <li class="aria-radio-li" role="radio" aria-checked="false" data-value="1" tabindex="0">1</li>
+      <li class="aria-radio-li" role="radio" aria-checked="false" data-value="2" tabindex="0">2</li>
+      <li class="aria-radio-li" role="radio" aria-checked="false" data-value="3" tabindex="0">3</li>
+      <li class="aria-radio-li" role="radio" aria-checked="false" data-value="4" tabindex="0">4</li>
+      <li class="aria-radio-li" role="radio" aria-checked="false" data-value="5" tabindex="0">5</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>5. ARIA role="option" <span class="badge">Listbox/Dropdown</span></h2>
+
+  <div class="q">
+    <div class="q-title" id="lbl-q6">Genel puaniniz nedir?</div>
+    <div role="listbox" aria-labelledby="lbl-q6" class="row">
+      <div class="aria-radio" role="option" aria-selected="false" data-value="1" tabindex="0">1</div>
+      <div class="aria-radio" role="option" aria-selected="false" data-value="2" tabindex="0">2</div>
+      <div class="aria-radio" role="option" aria-selected="false" data-value="3" tabindex="0">3</div>
+      <div class="aria-radio" role="option" aria-selected="false" data-value="4" tabindex="0">4</div>
+      <div class="aria-radio" role="option" aria-selected="false" data-value="5" tabindex="0">5</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>6. ARIA role="checkbox" <span class="badge">Coklu secim</span></h2>
+
+  <div class="q">
+    <div class="q-title">Hangi ozellikler onemli? (birden fazla secilebilir)</div>
+    <div class="row">
+      <div class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">Hiz</div>
+      <div class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">Guvenlik</div>
+      <div class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">Tasarim</div>
+      <div class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">Destek</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2>7. span[role="checkbox"] <span class="badge">Ozel element</span></h2>
+
+  <div class="q">
+    <div class="q-title">Ekstra secenekler</div>
+    <div class="row">
+      <span class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">E-posta bildirim</span>
+      <span class="aria-checkbox" role="checkbox" aria-checked="false" tabindex="0">SMS bildirim</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" type="button" id="submit-btn">Kaydet</button>
+  <div class="note" id="save-status"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Standart radio gruplarini tiklama ile guncelle (form ici)
+  // ARIA radio tiklama davranisi
+  document.querySelectorAll('[role="radio"]').forEach((el) => {
+    el.addEventListener("click", () => {
+      const group = el.closest('[role="radiogroup"], [role="listbox"], [role="list"]');
+      if (group) {
+        group.querySelectorAll('[role="radio"]').forEach((r) => r.setAttribute("aria-checked", "false"));
+      }
+      el.setAttribute("aria-checked", "true");
     });
-  </script>
+  });
+
+  // ARIA option tiklama davranisi
+  document.querySelectorAll('[role="option"]').forEach((el) => {
+    el.addEventListener("click", () => {
+      const group = el.closest('[role="listbox"]');
+      if (group) {
+        group.querySelectorAll('[role="option"]').forEach((r) => r.setAttribute("aria-selected", "false"));
+      }
+      el.setAttribute("aria-selected", "true");
+      // aria-checked ile de uyumlu olsun
+      el.setAttribute("aria-checked", "true");
+    });
+  });
+
+  // ARIA checkbox toggle
+  document.querySelectorAll('[role="checkbox"]').forEach((el) => {
+    el.addEventListener("click", () => {
+      const checked = el.getAttribute("aria-checked") === "true";
+      el.setAttribute("aria-checked", checked ? "false" : "true");
+    });
+  });
+
+  // Kaydet butonu
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    document.getElementById("save-status").textContent = "Kaydedildi";
+  });
+});
+</script>
+
 </body>
 </html>
